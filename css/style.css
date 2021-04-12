@@ -1,0 +1,208 @@
+html, body {
+    margin:0;
+	width: 100%;
+	font-family: 'robotolight', 'Open Sans', 'Helvetica', 'Arial', sans-serif;
+}
+
+#rendererContainer {
+    position: absolute;
+    top: 0px;
+	right: 0px;
+	left: 0px;
+    bottom: 21px;
+	z-index: 1;
+}
+
+#toggleConfig {
+    position: absolute;
+    z-index: 101;
+    top:5px;
+    left:5px;
+}
+
+#config {
+	visibility:hidden;
+    position: relative;
+    margin-top: 50px;
+    margin-right: auto;
+    margin-left: auto;
+    height:550px;
+    width: 350px;
+    text-align: center;
+    white-space: nowrap;
+    z-index: 100;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    opacity: 0;
+    transition: all 0.5s;
+    -moz-transition: all 0.5s;
+    -webkit-transition: all 0.5s;
+    background:rgba(218, 218, 218, 0.8);
+    border-radius: 10px;
+}
+
+#config.showConfig {
+    visibility: visible;
+    transition:all 0.5s;
+    opacity: 1;
+}
+
+#config label {
+    display: inline-block;
+    width: 105px;
+    margin: 5px;
+    padding: 4px;
+    text-align: right;
+}
+
+#config input {
+    display: inline-block;
+    width: 183px;
+    margin: 5px;
+    padding: 4px;
+}
+
+#config select {
+    display: inline-block;
+    width: 195px;
+    margin: 5px;
+    padding: 4px;
+}
+
+#toolbar {
+	position: absolute;
+    bottom: 0px;
+    height: 21px;
+    text-align: center;
+    background-color: rgb(19, 38, 58);
+    width: 100%;
+}
+#camera_mute, #mic_mute, #speaker_mute {
+    background-color: #3ae63a;
+}
+
+.muted {
+    background-color: #e63a3a !important;
+}
+#renderer0 {
+    position: absolute;
+    left: 0%;
+    right: 66%;
+    top: 0px;
+    bottom: 67%;
+    width: 34%;
+    background-color: gray;
+}
+#renderer1 {
+    position: absolute;
+    left: 34%;
+    right: 33%;
+    top: 0px;
+    bottom: 67%;
+    width: 33%;
+    background-color: darkgray;
+}
+#renderer2 {
+    position: absolute;
+    left: 67%;
+    right: 0%;
+    top: 0px;
+    bottom: 67%;
+    width: 33%;
+    background-color: gray;
+}
+#renderer3 {
+    position: absolute;
+    left: 0%;
+    right: 66%;
+    top: 33%;
+    bottom: 33%;
+    width: 34%;
+    background-color: darkgray;
+}
+#renderer4 {
+    position: absolute;
+    left: 34%;
+    right: 33%;
+    top: 33%;
+    bottom: 33%;
+    width: 33%;
+    background-color: gray;
+}
+#renderer5 {
+    position: absolute;
+    left: 67%;
+    right: 0%;
+    top: 33%;
+    bottom: 33%;
+    width: 33%;
+    background-color: darkgray;
+}
+#renderer6 {
+    position: absolute;
+    left: 0%;
+    right: 66%;
+    top: 67%;
+    bottom: 0px;
+    width: 34%;
+    background-color: gray;
+}
+#renderer7 {
+    position: absolute;
+    left: 34%;
+    right: 33%;
+    top: 67%;
+    bottom: 0px;
+    width: 33%;
+    background-color: darkgray;
+}
+#renderer8 {
+    position: absolute;
+    left: 67%;
+    right: 0%;
+    top: 67%;
+    bottom: 0px;
+    width: 33%;
+    background-color: gray;
+}
+.stats-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 3em;
+    right: 0;
+    overflow-y: auto;
+    z-index: 10;
+  }
+.stats-overlay.hide {
+    display: none;
+  }
+.stats-overlay ul.statistics-list {
+    list-style-type: none;
+    padding: 0;
+  }
+.stats-overlay ul.statistics-list li.statistics-line {
+    background: white;
+    display: inline;
+    padding: 0.1em;
+    opacity: 0.5;
+  }
+ .stats-overlay ul.statistics-list li.statistics-line:after {
+    content: '\A';
+    white-space: pre;
+  }
+.stats-overlay ul.statistics-list li.statistics-line .statistics-key {
+    font-weight: bold;
+  }
+
+.message {
+    display:inline-block;
+    margin:0;
+    background-color: deeppink;
+    float:right;
+    z-index:110;
+    position:relative;
+    top:1px;
+    right:80px;
+    color:#eeeeee;
+}
