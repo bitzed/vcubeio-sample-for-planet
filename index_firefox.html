@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Simple Connect Test</title>
+        <script src="./js/vendor/20_1_7/VidyoClient.js"></script>
+        <script src="./js/script.js"></script>
+        <link rel="stylesheet" href="./css/vendor/VidyoClient.css" />
+        <link rel="stylesheet" href="./css/style.css" />
+
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    </head>
+    <body>
+
+    <script>
+        var connector;
+        window.onload = async () => {
+
+            connector = new Connector();
+            await connector.initConnector();
+            //接続ボタンを押すと接続と同時にconfigを閉じる
+            $("#connect").click(function(){
+                connect();
+                if($("#config").hasClass("showConfig")){
+                    $("#config").removeClass("showConfig");
+                }else{
+                    return;
+                };
+            });
+            $("#disconnect").click(connector.disconnect.bind(connector));
+            //以降今回追加箇所
+            //vidyoConnector.cycleCameraを直接コール
+            $("#cyclecamera").click(function(){vidyoConnector.CycleCamera()});
+            //vidyoConnector.SelectLocalWindowShare をコールするfuncを呼び出す
+            $("#open_sharing_popup").click(connector.openSharingSelectionPopup.bind(connector));
+            //SelectLocalWindowShare のオブジェクトに null を渡すfuncを呼び出す
+            $("#stop_sharing").click(connector.stopSharing.bind(connector));
+            //vidyoConnector.GetStatsJsonをコールし、コンソールに吐くfuncを呼び出す
+            $("#show_stats").click(connector.showStatsInConsole.bind(connector));
+            //未公開社内テスト専用：同上のログ内容を整形して映像上にオーバーレイ表示するSetAdvancedConfiguration内のshowStatisticsOverlayを利用
+            $('#advanced-showStatisticsOverlay').change(function() {vidyoConnector.SetAdvancedConfiguration({ showStatisticsOverlay: $(this).prop('checked') });});
+
+            //カメラミュート処理 asyncで setCameraPrivacy クラスがtrueになったら
+            //UIボタンのCSSもmutedクラスを追加するよう処理している
+            $("#camera_mute").click(async() => {
+                if ($("#camera_mute").hasClass("muted")) {
+                    await connector.setCameraPrivacy({privacy:false})
+                    $("#camera_mute").removeClass("muted");
+                } else {
+                    await connector.setCameraPrivacy({privacy:true})
+                    $("#camera_mute").addClass("muted");
+                }
+            });
+            //マイクミュート処理
+            $("#mic_mute").click(async() => {
+                if ($("#mic_mute").hasClass("muted")) {
+                    await connector.setMicrophonePrivacy({privacy:false})
+                    $("#mic_mute").removeClass("muted");
+                } else {
+                    await connector.setMicrophonePrivacy({privacy:true})
+                    $("#mic_mute").addClass("muted");
+                }
+            });
+            //スピーカーミュート処理
+            $("#speaker_mute").click(async() => {
+                if ($("#speaker_mute").hasClass("muted")) {
+                    await connector.setSpeakerPrivacy({privacy:false})
+                    $("#speaker_mute").removeClass("muted");
+                } else {
+                    await connector.setSpeakerPrivacy({privacy:true})
+                    $("#speaker_mute").addClass("muted");
+                }
+            });
+
+//UI機能：設定ボックスを表示非表示
+            $("#toggleConfig").click(function() {
+                if ($("#config").hasClass("showConfig")) {
+                    $("#config").removeClass("showConfig");
+                } else {
+                    $("#config").addClass("showConfig");
+                }
+            });
+
+            $("#camera_resolution").change(setConstraint);
+            $("#camera_fps").change(setConstraint);
+
+
+            // カメラ選択用のイベントリスナを設定
+            connector.registerLocalCameraEventListener(
+                cameraOnAdded,
+                cameraOnRemoved,
+                cameraOnSelected,
+                cameraOnStateUpdated
+            );
+
+            //selectLocalCameraで選択されたカメラを使用する
+            $("#cameras").change(function() {
+                $("#cameras option:selected").each(function() {
+                    connector.selectLocalCamera($(this).val());
+                });
+            });
+            //ローカルマイク選択用のイベントリスナを設定
+            connector.registerLocalMicrophoneEventListener(
+                microphoneOnAdded,
+                microphoneOnRemoved,
+                microphoneOnSelected,
+                microphoneOnStateUpdated
+            );
+
+            //selectLocalMicrophoneで選択されたカメラを使用する
+            $("#microphones").change(function() {
+                $("#microphones option:selected").each(function() {
+                    connector.selectLocalMicrophone($(this).val());
+                });
+            });
+
+            //スピーカーイベントリスナを設定
+            connector.registerLocalSpeakerEventListener(
+                speakerOnAdded,
+                speakerOnRemoved,
+                speakerOnSelected,
+                speakerOnStateUpdated
+            );
+            //selectLocalSpeakerで選択されたスピーカーを使用する
+            $("#speakers").change(function() {
+                $("#speakers option:selected").each(function() {
+                    connector.selectLocalSpeaker($(this).val());
+                });
+            });
+        };
+
+        //UI上で入力された値を取得代入して入室
+        function connect() {
+            var host = $("#host").val();
+            var roomKey = $("#roomKey").val();
+            var displayName = $("#displayName").val();
+            var roomPin = $("#roomPin").val();
+            connector.connectToConference(host, roomKey, displayName, roomPin);
+        }
+        //カメラの各イベントごとに処理を追加
+        function cameraOnAdded({ id, name }) {
+            $("#cameras").append("<option value='" + id + "'>" + name + "</option>");
+        }
+        function cameraOnRemoved({ id }) {
+            $("#cameras option[value='" + id + "']").remove();
+        }
+        function cameraOnSelected({ id }) {
+            $("#cameras option[value='" + id + "']").prop("selected", true);
+        }
+        function cameraOnStateUpdated({ state }) {
+            console.log("cameraOnStateUpdated, state:" + state);
+        }
+        //マイクの各イベントごとに処理を追加
+        function microphoneOnAdded({ id, name }) {
+            $("#microphones").append("<option value='" + id + "'>" + name + "</option>");
+        }
+        function microphoneOnRemoved({ id }) {
+            $("#microphones option[value='" + id + "']").remove();
+        }
+        function microphoneOnSelected({ id }) {
+            $("#microphones option[value='" + id + "']").prop("selected", true);
+        }
+        function microphoneOnStateUpdated({ state }) {
+            console.log("microphoneOnStateUpdated, state:" + state);
+        }
+        //スピーカーのイベントごとに処理を追加
+        function speakerOnAdded({ id, name }) {
+            $("#speakers").append("<option value='" + id + "'>" + name + "</option>");
+        }
+        function speakerOnRemoved({ id }) {
+            $("#speakers option[value='" + id + "']").remove();
+        }
+        function speakerOnSelected({ id }) {
+            $("#speakers option[value='" + id + "']").prop("selected", true);
+        }
+        function speakerOnStateUpdated({ state }) {
+            console.log("speakerOnStateUpdated, state:" + state);
+        }
+        //設定画面で設定した内容に合わせて、setMaxConstraintsをコールする
+        function setConstraint() {
+            const fps = Number($("#camera_fps").val());
+            const resolution = $("#camera_resolution")
+                .val() //フレームレート
+                .split("x"); //解像度
+            const width = parseInt(resolution[0], 10);
+            const height = parseInt(resolution[1], 10);
+            connector.setConstraint({ width, height, fps });
+        }
+    </script>
+            <button id="toggleConfig">config</button>
+            <div id="config" class="showConfig">
+                <p>
+                    <label>Host</label>
+                    <input type="text" id="host" value="test.vcubeio.com" />
+                </p>
+                <p>
+                    <label>Room Key</label>
+                    <input type="text" id="roomKey" value="S24TQYyz1I"/>
+                </p>
+                <p>
+                    <label>Display Name</label>
+                    <input type="text" id="displayName" value="プラネット様FirefoxテストF01" />
+                </p>
+                <p>
+                    <label>Room Pin</label>
+                    <input type="text" id="roomPin" />
+                </p>
+                <p>
+                    <label>camera</label>
+                    <select id="cameras">
+                        <option value="">None</option><!--window.onload内でデバイスを取得し、更新します-->
+                    </select>
+                </p>
+                <p>
+                    <label>Microphone</label>
+                    <select id="microphones">
+                        <option value="">None</option>
+                    </select>
+                </p>
+                <p>
+                    <label>Speaker</label>
+                    <select id="speakers">
+                        <option value="">None</option>
+                    </select>
+                </p>
+                <p>
+                    <label>Camera Resolution</label>
+                    <select id="camera_resolution">
+                        <option value="0x0">auto</option>
+                        <option value="80x45">80x45</option>
+                        <option value="160x90">160x90</option>
+                        <option value="320x180">320x180</option>
+                        <option value="640x360">640x360</option>
+                        <option value="1024x576">1024x576</option>
+                        <option value="1152x648">1152x648</option>
+                        <option value="1280x720" selected="selected">1280x720</option>
+                        <option value="1366x768">1366x768</option>
+                        <option value="1600x900">1600x900</option>
+                        <option value="1920x1080">1920x1080</option>
+                        <option value="2560x1440">2560x1440</option>
+                        <option value="3840x2160">3840x2160</option>
+                    </select>
+                </p>
+                <p>
+                    <label>Camera FPS</label>
+                    <select id="camera_fps">
+                        <option value="0">Fastest</option>
+                        <option value="0.2">1/5</option>
+                        <option value="0.5">1/2</option>
+                        <option value="1">1</option>
+                        <option value="5">5</option>
+                        <option value="10">10</option>
+                        <option value="15">15</option>
+                        <option value="20">20</option>
+                        <option value="25">25</option>
+                        <option value="30" selected="selected">30</option>
+                        <option value="45">45</option>
+                        <option value="60">60</option>
+                    </select>
+                </p>
+            </div>
+        <div id="rendererContainer"><!--カスタムレイアウト向けに予め作成した映像枠-->
+            <div id="renderer0" class="pluginOverlay"></div>
+            <div id="renderer1" class="pluginOverlay"></div>
+            <div id="renderer2" class="pluginOverlay"></div>
+            <div id="renderer3" class="pluginOverlay"></div>
+            <div id="renderer4" class="pluginOverlay"></div>
+            <div id="renderer5" class="pluginOverlay"></div>
+            <div id="renderer6" class="pluginOverlay"></div>
+            <div id="renderer7" class="pluginOverlay"></div>
+            <div id="renderer8" class="pluginOverlay"></div>
+        </div>
+        <div id="toolbar" class="">
+            <button id="connect">connect</button>
+            <button id="disconnect">disconnect</button>
+            <!--追加機能用ボタン-->
+            <button id="cyclecamera">cycleCamera</button>
+            <button id="camera_mute">camera_mute</button>
+            <button id="mic_mute">mic_mute</button>
+            <button id="speaker_mute">speaker_mute</button>
+            <button id="open_sharing_popup">openSharingPopup</button>
+            <button id="stop_sharing">stopSharing</button>
+            <button id="show_stats">showStatsInConsole</button>
+        </div>
+    </body>
+</html>
